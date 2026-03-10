@@ -398,7 +398,9 @@ def run_tier2(skill_dir: Path, model: str) -> list[dict]:
             pass
 
     results = []
-    for dimension, rubric in RUBRICS.items():
+    total = len(RUBRICS)
+    for i, (dimension, rubric) in enumerate(RUBRICS.items(), 1):
+        print(f"  Judging {dimension} ({i}/{total})...", file=sys.stderr, flush=True)
         result = judge_dimension(skill_content, metadata, dimension, rubric, model)
         results.append(result)
 
