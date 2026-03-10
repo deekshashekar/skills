@@ -6,3 +6,5 @@ dist/
 .vscode/
 *.zip
 .claude/
+.venv/
+__pycache__/
