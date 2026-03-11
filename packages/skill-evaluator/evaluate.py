@@ -548,6 +548,10 @@ def main():
     else:
         print(format_text_report(skill_dir, tier1_results, tier2_results))
 
+    # Exit non-zero if any Tier 1 check failed
+    if tier1_results and any(not r["passed"] for r in tier1_results):
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

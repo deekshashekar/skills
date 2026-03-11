@@ -1,0 +1,150 @@
+name: Skill Evaluator (Tier 1)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - "packages/skill-evaluator/**"
+
+permissions:
+  pull-requests: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Detect changed skills
+        id: detect
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # Find changed files under skills/
+          CHANGED_SKILLS=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" -- 'skills/' \
+            | awk -F/ 'NF>=2 {print $1"/"$2}' \
+            | sort -u)
+
+          # Check if only the evaluator itself changed (no skills)
+          EVALUATOR_CHANGED=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" -- 'packages/skill-evaluator/' | head -1)
+
+          if [ -z "$CHANGED_SKILLS" ] && [ -n "$EVALUATOR_CHANGED" ]; then
+            echo "No skill changes detected — running against all skills as regression test"
+            CHANGED_SKILLS=$(find skills -mindepth 1 -maxdepth 1 -type d | sort)
+          fi
+
+          if [ -z "$CHANGED_SKILLS" ]; then
+            echo "No skills to evaluate"
+            echo "skills=" >> "$GITHUB_OUTPUT"
+          else
+            echo "Skills to evaluate:"
+            echo "$CHANGED_SKILLS"
+            # Store as newline-separated list
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo "skills<<$EOF" >> "$GITHUB_OUTPUT"
+            echo "$CHANGED_SKILLS" >> "$GITHUB_OUTPUT"
+            echo "$EOF" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Tier 1 evaluations
+        id: evaluate
+        if: steps.detect.outputs.skills != ''
+        working-directory: packages/skill-evaluator
+        run: |
+          FAILED=0
+          TOTAL=0
+          REPORT=""
+
+          while IFS= read -r skill_dir; do
+            [ -z "$skill_dir" ] && continue
+            TOTAL=$((TOTAL + 1))
+            SKILL_PATH="../../${skill_dir}"
+
+            echo "::group::Evaluating ${skill_dir}"
+            OUTPUT=$(uv run evaluate.py "$SKILL_PATH" --tier 1 2>&1) && STATUS=0 || STATUS=$?
+            echo "$OUTPUT"
+
+            REPORT="${REPORT}
+          ### \`${skill_dir}\`
+
+          \`\`\`
+          ${OUTPUT}
+          \`\`\`
+          "
+
+            if [ "$STATUS" -ne 0 ]; then
+              echo "::error::${skill_dir} failed Tier 1 checks"
+              FAILED=$((FAILED + 1))
+            fi
+            echo "::endgroup::"
+          done <<< "${{ steps.detect.outputs.skills }}"
+
+          echo ""
+          echo "=== Results: ${TOTAL} skill(s) evaluated, ${FAILED} failed ==="
+
+          # Save report for the comment step
+          REPORT_FILE=$(mktemp)
+          echo "$REPORT" > "$REPORT_FILE"
+          echo "report_file=$REPORT_FILE" >> "$GITHUB_OUTPUT"
+          echo "failed=$FAILED" >> "$GITHUB_OUTPUT"
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+
+          if [ "$FAILED" -gt 0 ]; then
+            exit 1
+          fi
+
+      - name: Comment on PR
+        if: always() && steps.evaluate.outcome != 'skipped'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const failed = parseInt('${{ steps.evaluate.outputs.failed }}', 10);
+            const total = parseInt('${{ steps.evaluate.outputs.total }}', 10);
+            const status = failed === 0 ? '✅ All checks passed' : `❌ ${failed} of ${total} skill(s) failed`;
+
+            let details = '';
+            const reportFile = '${{ steps.evaluate.outputs.report_file }}';
+            if (reportFile && fs.existsSync(reportFile)) {
+              details = fs.readFileSync(reportFile, 'utf8');
+            }
+
+            const body = `## Skill Evaluator — Tier 1 Results\n\n**${status}**\n\n${details}`;
+
+            // Find and update existing comment, or create a new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const marker = '## Skill Evaluator — Tier 1 Results';
+            const existing = comments.find(c => c.body.startsWith(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }
