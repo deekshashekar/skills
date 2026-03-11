@@ -1,11 +1,12 @@
 {
   "skill": "react-effect-guide",
   "model": "claude-sonnet-4-20250514",
-  "total_test_cases": 6,
-  "total_assertions": 28,
+  "total_test_cases": 9,
+  "total_assertions": 42,
   "summary": {
-    "with_skill": { "passed": 28, "total": 28 },
-    "without_skill": { "passed": 23, "total": 28 }
+    "note": "PENDING — new generation evals added, needs re-run",
+    "with_skill": { "passed": 28, "total": 42 },
+    "without_skill": { "passed": 23, "total": 42 }
   },
   "test_results": [
     {
@@ -55,12 +56,36 @@
       "without_skill": { "passed": 4, "total": 5 },
       "delta": 1,
       "verdict": "SLIGHT WIN"
+    },
+    {
+      "test": "online-status-component",
+      "type": "generation",
+      "with_skill": { "passed": null, "total": 5 },
+      "without_skill": { "passed": null, "total": 5 },
+      "delta": null,
+      "verdict": "PENDING"
+    },
+    {
+      "test": "filtered-product-list",
+      "type": "generation",
+      "with_skill": { "passed": null, "total": 4 },
+      "without_skill": { "passed": null, "total": 4 },
+      "delta": null,
+      "verdict": "PENDING"
+    },
+    {
+      "test": "shipping-form-parent-sync",
+      "type": "generation",
+      "with_skill": { "passed": null, "total": 5 },
+      "without_skill": { "passed": null, "total": 5 },
+      "delta": null,
+      "verdict": "PENDING"
     }
   ],
   "analysis": {
     "biggest_impact": "toggle-component — baseline writes the exact useEffect→onChange anti-pattern the skill prevents (+3 delta)",
     "skill_sweet_spot": "Code generation tasks. Baseline fails when writing new code more than when reviewing existing code.",
-    "ties_explanation": "3/6 tests are ties. Claude already handles well-known review patterns. Skill adds most value when WRITING new code.",
+    "ties_explanation": "3/9 tests are ties (all review-type). Claude handles well-known review patterns without the skill. Generation evals show the real delta.",
     "qualitative_differences": "With-skill responses reference the decision tree, use display-caused vs event-caused framing, and consistently recommend data-fetching libraries."
   }
 }

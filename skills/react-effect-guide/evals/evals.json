@@ -1,7 +1,7 @@
 {
   "skill_name": "react-effect-guide",
   "version": "1.0.0",
-  "total_assertions": 28,
+  "total_assertions": 42,
   "evals": [
     {
       "id": 1,
@@ -77,6 +77,44 @@
         { "id": "shows-corrected-code", "text": "Shows corrected code with proper data ownership (parent fetches, child displays)" },
         { "id": "adds-cleanup", "text": "Adds race condition cleanup (ignore flag) to the fetch Effect" },
         { "id": "recommends-library", "text": "Recommends a data-fetching library (TanStack Query, SWR, etc.)" }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "online-status-component",
+      "type": "generation",
+      "prompt": "Build me a React component that shows whether the user is currently online or offline. It should update in real-time when the network status changes (like when you toggle airplane mode). Show a green dot for online and a red dot for offline.",
+      "assertions": [
+        { "id": "uses-usesyncexternalstore", "text": "Uses useSyncExternalStore (not useEffect + addEventListener)" },
+        { "id": "no-useeffect-subscribe", "text": "Does NOT use useEffect with window.addEventListener('online'/'offline') to sync state" },
+        { "id": "subscribe-function", "text": "Provides a subscribe function that adds/removes online and offline event listeners" },
+        { "id": "getsnapshot-function", "text": "Provides a getSnapshot function using navigator.onLine" },
+        { "id": "working-component", "text": "Provides a working implementation (not just advice)" }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "filtered-product-list",
+      "type": "generation",
+      "prompt": "Build a ProductList React component that takes an array of products and a search query as props. It should display only the products whose name matches the query, and show a count like 'Showing 5 of 120 products'. The product list could be huge (thousands of items) so it needs to be performant.",
+      "assertions": [
+        { "id": "no-useeffect-filter", "text": "Does NOT use useEffect + setState to compute the filtered list" },
+        { "id": "computes-during-render", "text": "Computes filtered results during render (not in an Effect)" },
+        { "id": "uses-usememo", "text": "Uses useMemo to memoize the expensive filter computation" },
+        { "id": "working-component", "text": "Provides a working implementation (not just advice)" }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "shipping-form-parent-sync",
+      "type": "generation",
+      "prompt": "Build a ShippingForm component with fields for name, address, and zip code. The parent component needs to know the current form values in real-time so it can update a live preview panel next to the form. How should I structure this?",
+      "assertions": [
+        { "id": "no-useeffect-onchange", "text": "Does NOT use useEffect watching form state to call a parent callback" },
+        { "id": "handler-or-lift", "text": "Either calls parent callback in onChange handlers, or lifts state to parent" },
+        { "id": "explains-why-not-effect", "text": "Explains why useEffect is wrong here (event-caused, extra render pass, stale values)" },
+        { "id": "mentions-controlled-pattern", "text": "Mentions or implements a controlled pattern where parent owns form state" },
+        { "id": "working-component", "text": "Provides a working implementation (not just advice)" }
       ]
     }
   ]
