@@ -11,49 +11,49 @@
     {
       "test": "effect-chain-review",
       "type": "review",
-      "with_skill": "5/5",
-      "without_skill": "4/5",
-      "delta": "+1",
+      "with_skill": { "passed": 5, "total": 5 },
+      "without_skill": { "passed": 4, "total": 5 },
+      "delta": 1,
       "verdict": "SLIGHT WIN"
     },
     {
       "test": "toggle-component",
       "type": "generation",
-      "with_skill": "4/4",
-      "without_skill": "1/4",
-      "delta": "+3",
+      "with_skill": { "passed": 4, "total": 4 },
+      "without_skill": { "passed": 1, "total": 4 },
+      "delta": 3,
       "verdict": "MAJOR WIN"
     },
     {
       "test": "search-race-condition",
       "type": "review",
-      "with_skill": "5/5",
-      "without_skill": "5/5",
-      "delta": "0",
+      "with_skill": { "passed": 5, "total": 5 },
+      "without_skill": { "passed": 5, "total": 5 },
+      "delta": 0,
       "verdict": "TIE"
     },
     {
       "test": "key-prop-reset",
       "type": "review",
-      "with_skill": "4/4",
-      "without_skill": "4/4",
-      "delta": "0",
+      "with_skill": { "passed": 4, "total": 4 },
+      "without_skill": { "passed": 4, "total": 4 },
+      "delta": 0,
       "verdict": "TIE"
     },
     {
       "test": "shared-event-logic",
       "type": "review",
-      "with_skill": "5/5",
-      "without_skill": "5/5",
-      "delta": "0",
+      "with_skill": { "passed": 5, "total": 5 },
+      "without_skill": { "passed": 5, "total": 5 },
+      "delta": 0,
       "verdict": "TIE"
     },
     {
       "test": "data-flows-up",
       "type": "review",
-      "with_skill": "5/5",
-      "without_skill": "4/5",
-      "delta": "+1",
+      "with_skill": { "passed": 5, "total": 5 },
+      "without_skill": { "passed": 4, "total": 5 },
+      "delta": 1,
       "verdict": "SLIGHT WIN"
     }
   ],
