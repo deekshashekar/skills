@@ -1,0 +1,66 @@
+name: Skill Evaluator — Post Results
+
+# This workflow runs in the context of the base repo (not the fork),
+# so the GITHUB_TOKEN has write access to post PR comments.
+# See: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#workflow_run
+
+on:
+  workflow_run:
+    workflows: ["Skill Evaluator (Tier 1)"]
+    types: [completed]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Download evaluation results
+        uses: actions/download-artifact@v4
+        with:
+          name: eval-results
+          path: eval-results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const prNumber = parseInt(fs.readFileSync('eval-results/pr_number', 'utf8').trim(), 10);
+            const failed = parseInt(fs.readFileSync('eval-results/failed_count', 'utf8').trim(), 10);
+            const total = parseInt(fs.readFileSync('eval-results/total_count', 'utf8').trim(), 10);
+            const details = fs.readFileSync('eval-results/report.md', 'utf8');
+
+            const status = failed === 0 ? '✅ All checks passed' : `❌ ${failed} of ${total} skill(s) failed`;
+            const marker = '<!-- skill-evaluator-results -->';
+            const body = `${marker}\n## Skill Evaluator — Tier 1 Results\n\n**${status}**\n\n${details}`;
+
+            // Find and update existing comment, or create a new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            const existing = comments.find(c => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: body,
+              });
+            }
