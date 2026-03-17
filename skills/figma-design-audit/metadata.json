@@ -1,0 +1,34 @@
+{
+  "name": "figma-design-audit",
+  "version": "1.0.0",
+  "description": "Audits a Figma design against its design system. Checks color variables, font styles, numeric variables (padding/corner radius/gap), and unnecessary nesting. Posts inline comments on the Figma canvas for every violation found.",
+  "trigger": "/figma-design-audit",
+  "arguments": {
+    "figma_url": {
+      "description": "The Figma design URL to audit (node-id required)",
+      "required": true,
+      "example": "https://www.figma.com/design/fileKey/FileName?node-id=23-955"
+    }
+  },
+  "prerequisites": {
+    "mcp_servers": ["figma"],
+    "mcp_tools": ["get_design_context", "get_variable_defs"],
+    "user_inputs": ["figma_personal_access_token"]
+  },
+  "checks": [
+    "color_variables",
+    "font_styles",
+    "numeric_variables",
+    "unnecessary_nesting"
+  ],
+  "external_apis": [
+    {
+      "name": "Figma REST API",
+      "endpoint": "https://api.figma.com/v1/files/:fileKey/comments",
+      "method": "POST",
+      "auth": "X-Figma-Token header (personal access token)"
+    }
+  ],
+  "author": "sangeetsenan",
+  "created": "2026-03-18"
+}
