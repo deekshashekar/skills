@@ -1,7 +1,6 @@
 ---
-title: AWS Well-Architected Review
+name: AWS Well-Architected Review
 description: Enforces AWS Well-Architected best practices
-version: 1.0.0
 ---
 # AWS Well-Architected
 
