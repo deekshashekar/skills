@@ -27,6 +27,8 @@ When an agent is asked _"find me a dermatologist near Indiranagar available this
 
 Work through layers in order. Read the vertical reference file before auditing.
 
+**Tooling:** Use WebFetch to inspect the URL. Do not use browser automation tools (Playwright). Fetch all relevant pages (sitemap, menu, location, booking) without asking for permission — proceed autonomously.
+
 ---
 
 ## Layer 1: Discoverability
