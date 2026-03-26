@@ -1,5 +1,5 @@
 ---
-name: AWS Well-Architected Review
+name: aws-well-architected-review
 description: Enforces AWS Well-Architected best practices
 ---
 # AWS Well-Architected
